@@ -23,6 +23,7 @@ README.md
 └── docs/00-roadmap.md
     ├── projects/README.md
     ├── docs/01-paper-syllabus.md
+    ├── docs/06-bibliography.md
     ├── docs/02-vllm-plan.md
     ├── docs/03-sglang-plan.md
     ├── docs/04-troubleshooting.md
@@ -40,7 +41,8 @@ infra-basic/
 │   ├── 02-vllm-plan.md
 │   ├── 03-sglang-plan.md
 │   ├── 04-troubleshooting.md
-│   └── 05-open-source-playbook.md
+│   ├── 05-open-source-playbook.md
+│   └── 06-bibliography.md
 └── projects/
     └── README.md
 ```
