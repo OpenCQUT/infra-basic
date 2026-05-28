@@ -8,10 +8,32 @@
 
 - PyTorch Tutorials: https://docs.pytorch.org/tutorials/
 - PyTorch Profiler: https://docs.pytorch.org/docs/stable/profiler.html
+- PyTorch Custom Operators Landing Page: https://docs.pytorch.org/tutorials/advanced/custom_ops_landing_page.html
+- PyTorch Custom C++ / CUDA Operators: https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html
+- PyTorch Custom SYCL Operators: https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html
+- PyTorch `torch.library`: https://docs.pytorch.org/docs/stable/library.html
 - Hugging Face Transformers Generation: https://huggingface.co/docs/transformers/main_classes/text_generation
 - Hugging Face KV Cache: https://huggingface.co/docs/transformers/kv_cache
 - Triton Tutorials: https://triton-lang.org/main/getting-started/tutorials/
 - Triton Matmul Tutorial: https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html
+- Triton Language API: https://triton-lang.org/main/python-api/triton.language.html
+
+### CUDA / Profiling / Kernel Tools
+
+- CUDA C++ Programming Guide: https://docs.nvidia.com/cuda/cuda-c-programming-guide/
+- CUDA C++ Best Practices Guide: https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/
+- Nsight Systems: https://developer.nvidia.com/nsight-systems
+- Nsight Compute: https://developer.nvidia.com/nsight-compute
+- CUTLASS: https://github.com/NVIDIA/cutlass
+- CuTe DSL: https://docs.nvidia.com/cutlass/media/docs/cpp/cute/index.html
+
+### PaddlePaddle / Custom Kernel / Custom Device
+
+- PaddlePaddle Custom C++ Op: https://www.paddlepaddle.org.cn/documentation/guides/custom_op/new_cpp_op_cn.html
+- PaddlePaddle Custom Kernel: https://www.paddlepaddle.org.cn/documentation/docs/en/dev_guides/custom_device_docs/custom_kernel_en.html
+- PaddlePaddle Custom Device: https://www.paddlepaddle.org.cn/documentation/docs/en/dev_guides/custom_device_docs/custom_device_overview_en.html
+- PaddleNLP: https://github.com/PaddlePaddle/PaddleNLP
+- Paddle Inference: https://www.paddlepaddle.org.cn/inference/master/guides/introduction/index_intro.html
 
 ### vLLM
 
@@ -19,6 +41,7 @@
 - vLLM Architecture Overview: https://docs.vllm.ai/en/latest/design/arch_overview.html
 - vLLM V1 Guide: https://docs.vllm.ai/en/latest/usage/v1_guide.html
 - vLLM Benchmark CLI: https://docs.vllm.ai/en/latest/benchmarking/benchmark_cli.html
+- vLLM Attention Backends: https://docs.vllm.ai/en/latest/design/attention_backends.html
 - vLLM GitHub: https://github.com/vllm-project/vllm
 
 ### SGLang
@@ -49,6 +72,10 @@
 | 2 | FlashAttention-2 | https://arxiv.org/abs/2307.08691 | 重点看并行度和 work partitioning |
 | 3 | FlashAttention-3 | https://arxiv.org/abs/2407.08608 | 作为 Hopper / FP8 / 异步能力的前沿资料 |
 | 4 | Triton Matmul Tutorial | https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html | 结合实验理解 block、program id、memory layout |
+| 5 | PyTorch Custom Operators | https://docs.pytorch.org/tutorials/advanced/custom_ops_landing_page.html | 理解 operator schema、dispatcher、fake tensor、autograd、compile 支持 |
+| 6 | Paddle Custom Op / Custom Kernel | https://www.paddlepaddle.org.cn/documentation/guides/custom_op/new_cpp_op_cn.html | 作为框架接入底层算子的对照案例 |
+| 7 | CUDA C++ Programming Guide | https://docs.nvidia.com/cuda/cuda-c-programming-guide/ | 后期系统学习 GPU 编程模型 |
+| 8 | CUTLASS / CuTe | https://github.com/NVIDIA/cutlass | 高阶 GEMM / tensor core / tiling 学习资料 |
 
 ## 3. LLM Serving 经典论文
 
@@ -109,7 +136,20 @@
 | 4 | Guidance | https://github.com/guidance-ai/guidance | constrained generation 框架参考 |
 | 5 | LMQL | https://arxiv.org/abs/2212.06094 | language model query / constrained decoding 思路 |
 
-## 9. 2025-2026 前沿观察清单
+## 9. Operator / Kernel / Custom Backend 实践资料
+
+| 顺序 | 资料 | 链接 | 读法 |
+|---:|---|---|---|
+| 1 | PyTorch Profiler | https://docs.pytorch.org/docs/stable/profiler.html | 先学会看 op，再写 op |
+| 2 | Triton Tutorials | https://triton-lang.org/main/getting-started/tutorials/ | 从 vector add、matmul、softmax 开始 |
+| 3 | PyTorch Custom Operators Landing Page | https://docs.pytorch.org/tutorials/advanced/custom_ops_landing_page.html | 理解 custom op 的完整路径 |
+| 4 | PyTorch Custom C++ / CUDA Operators | https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html | 后期学习 C++/CUDA 接入 PyTorch |
+| 5 | PyTorch `torch.library` | https://docs.pytorch.org/docs/stable/library.html | 理解 Python 侧注册 custom op |
+| 6 | Paddle Custom C++ Op | https://www.paddlepaddle.org.cn/documentation/guides/custom_op/new_cpp_op_cn.html | Paddle 算子定义和注册对照 |
+| 7 | Paddle Custom Kernel | https://www.paddlepaddle.org.cn/documentation/docs/en/dev_guides/custom_device_docs/custom_kernel_en.html | 外部设备 custom kernel 对照 |
+| 8 | vLLM Attention Backends | https://docs.vllm.ai/en/latest/design/attention_backends.html | 理解 serving runtime 和 attention kernel 的连接 |
+
+## 10. 2025-2026 前沿观察清单
 
 这些不一定适合入门阶段精读，但适合后期跟踪方向。
 
@@ -121,28 +161,31 @@
 | PD disaggregation 实践 | vLLM disaggregated serving docs | https://docs.vllm.ai/en/latest/examples/disaggregated_serving.html | 生产 serving 的重要趋势 |
 | SGLang 高级功能 | PD/EPD disaggregation、HiCache、DP router | https://docs.sglang.io/docs/basic_usage/overview | SGLang 的高级系统能力 |
 
-## 10. 阅读优先级压缩版
+## 11. 阅读优先级压缩版
 
-时间有限时，先读这 10 个：
+时间有限时，先读这 12 个：
 
 1. Attention Is All You Need
-2. FlashAttention
-3. Orca
-4. PagedAttention / vLLM
-5. SGLang
-6. SARATHI
-7. DistServe
-8. Mooncake
-9. Speculative Decoding
-10. SmoothQuant 或 GPTQ
+2. PyTorch Profiler / Tensor layout 基础
+3. Triton Tutorials: vector add / matmul / softmax
+4. FlashAttention
+5. Orca
+6. PagedAttention / vLLM
+7. SGLang
+8. SARATHI
+9. DistServe
+10. Mooncake
+11. Speculative Decoding
+12. SmoothQuant 或 GPTQ
 
-## 11. 不建议新手过早深挖的内容
+## 12. 不建议新手过早深挖的内容
 
 - CUDA C++ kernel 完整实现；
+- CUTLASS / CuTe 高性能 GEMM；
 - NCCL 多机通信细节；
 - Kubernetes 大规模部署；
 - MoE expert parallelism；
 - 多模态 any-to-any serving；
 - vLLM/SGLang 最新 experimental 分布式功能。
 
-这些主题不是不重要，而是需要在掌握 prefill/decode、KV cache、scheduler、benchmark 之后再进入。
+这些主题不是不重要，而是需要在掌握 PyTorch tensor、operator/kernel、prefill/decode、KV cache、scheduler、benchmark 之后再进入。
