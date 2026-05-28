@@ -1,6 +1,18 @@
 # 08. One Month Plan
 
-本文档给出 `infra-basic` 的一月学习计划。目标是在 4 周内完成 **LLM 推理基础设施的入门闭环**：能跑通小模型推理，理解 operator / kernel 基础，完成 KV cache 实验，搭建 toy serving，跑通 vLLM 与 SGLang 的最小实验，并准备第一个开源贡献入口。
+本文档给出 `infra-basic` 的一月学习计划。目标是在 4 周内完成 **LLM 推理基础设施的入门闭环**：能跑通小模型推理，理解 operator / kernel / CUDA/GPU 编程模型，完成 KV cache 实验，搭建 toy serving，跑通 vLLM 与 SGLang 的最小实验，并准备第一个开源贡献入口。
+
+本计划默认使用 **CUDA-first / NVIDIA 标准环境**：
+
+```text
+Linux
+→ NVIDIA GPU
+→ NVIDIA Driver
+→ CUDA Toolkit
+→ PyTorch CUDA
+→ Triton CUDA
+→ vLLM / SGLang CUDA path
+```
 
 ## 一个月够不够？
 
@@ -8,71 +20,84 @@
 
 ```text
 够：完成入门闭环，建立主线概念，跑通最小实验，具备继续深入的方向感。
-不够：深入掌握 vLLM / SGLang 核心调度、KV cache manager、attention backend、CUDA/Triton kernel 优化，或稳定提交核心 PR。
+不够：深入掌握 vLLM / SGLang 核心调度、KV cache manager、attention backend、CUDA kernel 优化，或稳定提交核心模块 PR。
 ```
 
 一个月结束时，合理目标不是“成为 vLLM / SGLang 专家”，而是：
 
 1. 能解释 LLM 推理请求的基本路径；
 2. 能解释 prefill、decode、KV cache、TTFT、TPOT；
-3. 能用 PyTorch / Transformers 跑小模型；
-4. 能用 profiler 看一次 forward 的主要算子；
-5. 能写一个简单 toy server；
-6. 能启动 vLLM / SGLang server；
-7. 能做一个小 benchmark；
-8. 能读懂 vLLM / SGLang 的源码入口和主路径；
-9. 能选择一个文档、example、issue reproduction 或 benchmark 作为开源入口。
+3. 能用 PyTorch CUDA / Transformers 跑小模型；
+4. 能用 profiler 看一次 forward 的主要 CUDA ops；
+5. 能解释 thread、block、grid、warp、SM、global memory、shared memory、register；
+6. 能写或跑通简单 Triton CUDA kernel；
+7. 能写一个简单 toy server；
+8. 能启动 vLLM / SGLang server；
+9. 能做一个小 benchmark；
+10. 能选择一个文档、example、issue reproduction 或 benchmark 作为开源入口。
 
 ## 时间投入假设
-
-本计划按两档设计。
 
 | 档位 | 每周投入 | 适合人群 | 一个月结果 |
 |---|---:|---|---|
 | 标准版 | 10-15 小时/周 | 有 Python 基础，刚进入 LLM infra | 完成主线实验，跑通 vLLM/SGLang，形成笔记 |
-| 强化版 | 20-30 小时/周 | 时间更集中，能稳定用 GPU | 完成更多 benchmark，并尝试 issue reproduction |
+| 强化版 | 20-30 小时/周 | 时间更集中，能稳定使用 NVIDIA GPU | 完成更多 benchmark，并尝试 issue reproduction |
 
 如果每周少于 8 小时，建议把本计划拉长到 6-8 周。
 
 ## 一个月总目标
 
 ```text
-Week 1: PyTorch 推理基础 + Operator / Kernel 基础
+Week 1: PyTorch CUDA + Operator / Kernel + CUDA/GPU 编程模型
 Week 2: Transformers 生成 + KV cache
 Week 3: Toy serving + benchmark
-Week 4: vLLM / SGLang 最小闭环 + 开源贡献准备
+Week 4: vLLM / SGLang CUDA path 最小闭环 + 开源贡献准备
 ```
 
-## Week 1：PyTorch 推理基础 + Operator / Kernel 基础
+## Week 1：PyTorch CUDA + Operator / Kernel + CUDA/GPU 编程模型
 
 ### 目标
 
-建立 tensor、dtype、device、memory、profiler、operator、kernel 的基本直觉。
+建立 tensor、dtype、device、memory、profiler、operator、kernel、CUDA/GPU 编程模型的基本直觉。
 
-### 必做任务
-
-#### Day 1：环境与 PyTorch 推理检查
+### Day 1：CUDA 环境与 PyTorch 推理检查
 
 任务：
 
-- 确认 PyTorch 能使用 GPU；
+- 确认 `nvidia-smi` 能看到 GPU；
+- 确认 PyTorch CUDA 可用；
 - 跑通 tensor 创建、CPU/GPU 拷贝、matmul；
-- 记录不同 dtype 的显存差异。
+- 记录不同 dtype 的显存差异；
+- 理解为什么 GPU benchmark 要同步。
 
 交付物：
 
 ```text
+cuda_labs/00_check_cuda.py
 experiments/torch_memory.py
-reports/week1_torch_memory.md
+reports/week1_cuda_torch_memory.md
+```
+
+最小检查脚本：
+
+```python
+import torch
+
+print("torch:", torch.__version__)
+print("cuda available:", torch.cuda.is_available())
+if torch.cuda.is_available():
+    print("device:", torch.cuda.get_device_name(0))
+    print("capability:", torch.cuda.get_device_capability(0))
 ```
 
 必须能解释：
 
 - `float32`、`float16`、`bfloat16` 的显存差异；
 - tensor 在 CPU 和 GPU 之间移动为什么有成本；
-- 为什么 batch 变大显存会上升。
+- 为什么 CUDA 操作经常是异步的；
+- 为什么计时前后可能需要 `torch.cuda.synchronize()`。
 
-#### Day 2：Tensor layout
+### Day 2：Tensor layout
 
 任务：
 
@@ -93,18 +118,20 @@ reports/week1_tensor_layout.md
 - non-contiguous tensor 为什么可能影响 kernel；
 - `.contiguous()` 为什么可能增加内存和拷贝。
 
-#### Day 3：Profiler 入门
+### Day 3：Profiler 入门
 
 任务：
 
 - 用 `torch.profiler` profile 一次小模型 forward；
 - 找 top CUDA ops；
-- 区分 CPU time 和 CUDA time。
+- 区分 CPU time 和 CUDA time；
+- 记录 kernel launch、matmul、attention、norm、copy 相关条目。
 
 交付物：
 
 ```text
 operator_labs/profile_forward.py
+cuda_labs/05_torch_profiler_cuda.py
 reports/week1_profile_forward.md
 ```
 
@@ -112,30 +139,32 @@ reports/week1_profile_forward.md
 
 - 一次 forward 里最耗时的是哪些算子；
 - tokenizer 时间和 GPU forward 时间不能混在一起看；
-- Python 慢和底层 kernel 慢不是同一个问题。
+- Python 慢、kernel launch 慢、CUDA kernel 本身慢是不同问题。
 
-#### Day 4：Operator / Kernel 概念
+### Day 4：Operator / Kernel / CUDA 概念
 
 任务：
 
 - 阅读 `docs/07-operator-kernels.md`；
-- 写一页笔记解释 Python、operator、kernel、Triton、CUDA 的关系；
-- 阅读 PyTorch custom op 和 Paddle custom kernel 的官方文档入口，不要求实现。
+- 阅读 `docs/09-cuda-gpu-programming.md`；
+- 写一页笔记解释 Python、operator、kernel、Triton、CUDA 的关系。
 
 交付物：
 
 ```text
 operator_labs/custom_op_notes.md
-operator_labs/paddle_custom_kernel_notes.md
+cuda_labs/README.md
+reports/week1_operator_cuda_notes.md
 ```
 
 必须能解释：
 
 - operator 和 kernel 的区别；
 - Python 调 `torch.matmul` 为什么不是 Python 自己做矩阵乘；
-- PyTorch custom op 与 Paddle custom op / custom kernel 的相似点。
+- CUDA 中 thread、block、grid、warp、SM 是什么；
+- global memory、shared memory、register 的差异。
 
-#### Day 5-7：Triton 小实验
+### Day 5-6：Triton CUDA 小实验
 
 任务：
 
@@ -157,8 +186,24 @@ reports/week1_triton_basics.md
 
 - 写高性能 matmul；
 - 写 FlashAttention；
-- 写 CUDA C++；
 - 追求超过 PyTorch 官方 kernel。
+
+### Day 7：CUDA C++ 最小阅读 / 可选实现
+
+任务：
+
+- 看懂 CUDA vector add；
+- 可选：实现一个 `01_vector_add.cu`；
+- 理解 kernel launch、block size、grid size、边界检查。
+
+交付物：
+
+```text
+cuda_labs/01_vector_add.cu
+reports/week1_cuda_vector_add.md
+```
+
+如果时间紧，Day 7 可以只阅读，不要求编译通过。
 
 ### Week 1 验收
 
@@ -168,7 +213,8 @@ reports/week1_triton_basics.md
 2. operator 和 kernel 的区别是什么？
 3. 什么是 shape、stride、contiguous？
 4. 为什么 profiler 是写 kernel 前必须会的工具？
-5. Triton 为什么看起来像 Python，但不是普通 Python？
+5. thread、block、grid、warp、SM 的关系是什么？
+6. Triton 和 CUDA C++ 分别适合什么阶段？
 
 ## Week 2：Transformers 生成 + KV Cache
 
@@ -176,9 +222,7 @@ reports/week1_triton_basics.md
 
 理解文本生成的完整路径：tokenizer、logits、sampling、autoregressive decoding、prefill、decode、KV cache。
 
-### 必做任务
-
-#### Day 8：跑通小模型生成
+### Day 8：跑通小模型生成
 
 建议模型：
 
@@ -190,7 +234,7 @@ reports/week1_triton_basics.md
 
 - 用 Transformers 跑通 `model.generate()`；
 - 打印 input token 数、output token 数、耗时；
-- 记录显存。
+- 记录 CUDA 显存。
 
 交付物：
 
@@ -199,7 +243,7 @@ experiments/generate_hf.py
 reports/week2_generate_hf.md
 ```
 
-#### Day 9-10：手写 naive decoding
+### Day 9-10：手写 naive decoding
 
 任务：
 
@@ -221,7 +265,7 @@ reports/week2_naive_decoding.md
 - 为什么取最后一个 token 的 logits；
 - 为什么每生成一个 token 都要 forward。
 
-#### Day 11：Sampling
+### Day 11：Sampling
 
 任务：
 
@@ -238,7 +282,7 @@ experiments/sampling.py
 reports/week2_sampling.md
 ```
 
-#### Day 12-13：KV Cache
+### Day 12-13：KV Cache
 
 任务：
 
@@ -265,7 +309,7 @@ reports/week2_kv_cache.md
 | 1024 | 128 | on | | | | |
 | 4096 | 128 | on | | | | |
 
-#### Day 14：论文轻读
+### Day 14：论文轻读
 
 只读主线，不做数学细节：
 
@@ -288,6 +332,7 @@ notes/paper_notes/week2_paper_notes.md
 3. KV cache 为什么会占显存？
 4. TTFT 和 TPOT 分别受什么影响？
 5. 为什么长 prompt 和长 output 的瓶颈不同？
+6. attention 和 KV cache 为什么会受 GPU memory bandwidth 影响？
 
 ## Week 3：Toy Serving + Benchmark
 
@@ -295,9 +340,7 @@ notes/paper_notes/week2_paper_notes.md
 
 写一个很慢但可观测的 LLM server，并用它理解 vLLM / SGLang 的必要性。
 
-### 必做任务
-
-#### Day 15-16：非流式 toy server
+### Day 15-16：非流式 toy server
 
 任务：
 
@@ -315,7 +358,7 @@ toy_server/client.py
 reports/week3_toy_server_basic.md
 ```
 
-#### Day 17：Streaming
+### Day 17：Streaming
 
 任务：
 
@@ -337,14 +380,14 @@ reports/week3_streaming.md
 - streaming 为什么改变 server/client 设计；
 - client 不读取 streaming response 可能造成什么问题。
 
-#### Day 18-19：Benchmark
+### Day 18-19：Benchmark
 
 任务：
 
 - 写 benchmark 脚本；
 - 测并发 1 / 2 / 4 / 8；
 - 测 short-short、short-long、long-short、long-long；
-- 记录 TTFT、TPOT、E2E latency、tokens/s、显存。
+- 记录 TTFT、TPOT、E2E latency、tokens/s、显存、GPU utilization。
 
 交付物：
 
@@ -362,7 +405,7 @@ workload 表：
 | long-short | 2048 | 128 | prefill / TTFT 压力 |
 | long-long | 2048 | 512 | 综合压力 |
 
-#### Day 20：问题复盘
+### Day 20：问题复盘
 
 写一页说明 toy server 为什么不适合高并发 serving。
 
@@ -381,7 +424,7 @@ workload 表：
 reports/week3_why_serving_engine.md
 ```
 
-#### Day 21：论文轻读
+### Day 21：论文轻读
 
 阅读：
 
@@ -405,15 +448,13 @@ notes/paper_notes/week3_serving_papers.md
 4. 什么 workload 会让 TPOT 高？
 5. 为什么 vLLM / SGLang 的核心不是 HTTP，而是调度和 KV cache 管理？
 
-## Week 4：vLLM / SGLang 最小闭环 + 开源贡献准备
+## Week 4：vLLM / SGLang CUDA path 最小闭环 + 开源贡献准备
 
 ### 目标
 
 跑通 vLLM 和 SGLang 的最小实验，做一次对比 benchmark，并准备第一个可执行的开源贡献入口。
 
-### 必做任务
-
-#### Day 22-23：vLLM 最小闭环
+### Day 22-23：vLLM 最小闭环
 
 任务：
 
@@ -421,7 +462,7 @@ notes/paper_notes/week3_serving_papers.md
 - 用 OpenAI client 请求；
 - 测 streaming；
 - 测不同 `max_model_len` 或 `gpu_memory_utilization`；
-- 记录日志和显存。
+- 记录日志、显存和 profiler 观察。
 
 交付物：
 
@@ -441,6 +482,7 @@ API server
 → KV cache manager
 → model runner
 → attention backend
+→ CUDA / Triton kernel
 ```
 
 交付物：
@@ -450,7 +492,7 @@ vllm_labs/source_notes.md
 vllm_labs/attention_backend_notes.md
 ```
 
-#### Day 24-25：SGLang 最小闭环
+### Day 24-25：SGLang 最小闭环
 
 任务：
 
@@ -478,6 +520,7 @@ server entrypoint
 → memory pool
 → radix cache
 → structured output decoding
+→ CUDA / Triton kernel boundary
 ```
 
 交付物：
@@ -487,7 +530,7 @@ sglang_labs/source_notes.md
 sglang_labs/kernel_runtime_notes.md
 ```
 
-#### Day 26：vLLM vs SGLang 对比
+### Day 26：vLLM vs SGLang 对比
 
 用同一个模型、同一类 workload 做小对比。
 
@@ -495,6 +538,7 @@ sglang_labs/kernel_runtime_notes.md
 
 - model；
 - GPU；
+- CUDA / driver；
 - dtype；
 - prompt tokens；
 - output tokens；
@@ -517,7 +561,7 @@ reports/week4_vllm_sglang_comparison.md
 | SGLang | short-short | 1 | | | | | |
 | SGLang | shared-prefix | 4 | | | | | |
 
-#### Day 27：开源 issue 筛选
+### Day 27：开源 issue 筛选
 
 目标不是马上改核心代码，而是找一个可完成入口。
 
@@ -525,9 +569,9 @@ reports/week4_vllm_sglang_comparison.md
 
 - 文档命令过期；
 - example 不够最小；
-- small model 启动说明不清楚；
-- structured output 示例可改进；
+- CUDA 环境说明不清楚；
 - benchmark 步骤不完整；
+- attention backend 文档缺少最小解释；
 - issue 缺少最小复现。
 
 交付物：
@@ -549,7 +593,7 @@ Risk:
 Next action:
 ```
 
-#### Day 28：准备 first contribution
+### Day 28：准备 first contribution
 
 选择一个最小任务，完成以下之一：
 
@@ -573,7 +617,8 @@ notes/oss/first_contribution_plan.md
 2. SGLang 请求主路径是什么？
 3. vLLM 和 SGLang 各自更强调什么？
 4. prefix cache / radix cache 对 TTFT 还是 TPOT 影响更明显？
-5. 第一个开源贡献应该选什么类型？为什么？
+5. attention backend 和 CUDA/Triton kernel 在请求路径中处于什么位置？
+6. 第一个开源贡献应该选什么类型？为什么？
 
 ## 每日节奏建议
 
@@ -591,7 +636,7 @@ notes/oss/first_contribution_plan.md
 ```text
 45 分钟：阅读
 90-120 分钟：实验
-45 分钟：benchmark / debug
+45 分钟：benchmark / debug / profiler
 30 分钟：写报告 / 笔记
 ```
 
@@ -599,7 +644,7 @@ notes/oss/first_contribution_plan.md
 
 不要做：
 
-- 从零啃 CUDA C++ 完整体系；
+- 从零完整啃 CUDA Programming Guide；
 - 手写 FlashAttention；
 - 深入 CUTLASS / CuTe；
 - 大改 vLLM scheduler；
@@ -626,6 +671,7 @@ notes/oss/first_contribution_plan.md
 - 判断问题属于环境、模型、参数、workload 还是框架的初步能力；
 - 写最小复现脚本的能力；
 - 做简单 benchmark 的能力；
+- 解释基础 CUDA/GPU 编程模型的能力；
 - 继续深入 scheduler、KV cache、attention backend、Triton/CUDA 的方向感。
 
 ## 第二个月建议方向
@@ -639,21 +685,22 @@ notes/oss/first_contribution_plan.md
 | Triton / CUDA / attention backend | 想做底层性能优化 |
 | benchmark / profiling | 想做性能分析和复现 |
 | docs / examples / tests | 想尽快参与开源贡献 |
-| Paddle custom kernel / custom device | 想进入 Paddle 或国产硬件生态 |
 
 ## 最小完成版
 
 如果时间不够，只完成这些：
 
 ```text
-1. PyTorch dtype / memory / profiler
+1. PyTorch CUDA dtype / memory / profiler
 2. tensor layout: shape / stride / contiguous
-3. Transformers naive decoding
-4. KV cache 对比实验
-5. toy server non-streaming + benchmark
-6. vLLM server + client
-7. SGLang server + structured output
-8. 一个 issue reproduction 或 first contribution plan
+3. CUDA/GPU 编程模型：thread / block / grid / memory hierarchy
+4. Triton vector add 或 fused add + relu
+5. Transformers naive decoding
+6. KV cache 对比实验
+7. toy server non-streaming + benchmark
+8. vLLM server + client
+9. SGLang server + structured output
+10. 一个 issue reproduction 或 first contribution plan
 ```
 
-这 8 项完成后，一个月计划就算达标。
+这 10 项完成后，一个月计划就算达标。
