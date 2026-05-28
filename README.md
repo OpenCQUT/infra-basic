@@ -22,6 +22,7 @@
 ```text
 README.md
 └── docs/00-roadmap.md
+    ├── docs/08-one-month-plan.md
     ├── projects/README.md
     ├── docs/07-operator-kernels.md
     ├── docs/01-paper-syllabus.md
@@ -45,7 +46,8 @@ infra-basic/
 │   ├── 04-troubleshooting.md
 │   ├── 05-open-source-playbook.md
 │   ├── 06-bibliography.md
-│   └── 07-operator-kernels.md
+│   ├── 07-operator-kernels.md
+│   └── 08-one-month-plan.md
 └── projects/
     └── README.md
 ```
@@ -66,6 +68,28 @@ infra-basic/
 | 8GB-16GB GPU | 0.5B-1.5B 模型基础推理、toy server、轻量 vLLM/SGLang 实验、Triton 小 kernel |
 | 24GB+ GPU | 更完整的 benchmark、prefix cache、long context、quantization、kernel profiling 实验 |
 | 多 GPU | tensor parallel、pipeline parallel、PD disaggregation、分布式 serving、通信相关 profiling |
+
+## 一月计划
+
+如果目标是在一个月内完成入门闭环，优先看：`docs/08-one-month-plan.md`。
+
+一个月足够完成：
+
+- PyTorch 推理基础；
+- Operator / Kernel 基础；
+- Transformers naive decoding；
+- KV cache 对比实验；
+- toy serving + benchmark；
+- vLLM / SGLang 最小实验；
+- 第一个开源贡献入口准备。
+
+一个月不够深入掌握：
+
+- vLLM / SGLang 核心调度；
+- attention backend 深度优化；
+- CUDA / CUTLASS / FlashAttention；
+- 多机分布式 serving；
+- 稳定提交核心模块 PR。
 
 ## 核心评价指标
 
