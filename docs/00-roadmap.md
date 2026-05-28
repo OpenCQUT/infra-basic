@@ -22,6 +22,7 @@
 
 ```text
 PyTorch 推理基础
+→ Operator / Kernel 基础
 → Transformers 生成过程
 → KV Cache / prefill / decode
 → toy serving + benchmark
@@ -60,7 +61,45 @@ PyTorch 推理基础
 2. 为什么 bf16/fp16 能降低显存；
 3. 为什么 GPU 利用率不是“模型跑在 GPU 上”就自然很高。
 
-## 阶段 2：Transformers 生成过程
+## 阶段 2：Operator / Kernel 基础
+
+目标：理解 Python、operator、kernel、Triton、CUDA、custom op 之间的关系。这个阶段不要求写高性能 CUDA，只要求先会看算子、profile 算子，并能写简单 Triton kernel。
+
+详见：`docs/07-operator-kernels.md`。
+
+### 必会概念
+
+- operator vs kernel
+- framework dispatcher
+- tensor shape / stride / contiguous
+- kernel launch
+- fusion
+- Triton JIT kernel
+- CUDA kernel 基础概念
+- PyTorch custom op
+- Paddle custom op / custom kernel 作为对照
+- vLLM / SGLang attention backend
+
+### 交付物
+
+- `operator_labs/tensor_layout.py`
+- `operator_labs/profile_forward.py`
+- `operator_labs/triton_vector_add.py`
+- `operator_labs/triton_rmsnorm.py`
+- `reports/operator_kernel_basics.md`
+
+### 通过标准
+
+能解释：
+
+1. Python 调 `torch.matmul` 为什么不是 Python 自己逐元素计算；
+2. operator 和 kernel 的区别是什么；
+3. shape、stride、contiguous 为什么影响性能；
+4. fusion 为什么可能减少 kernel launch 和 HBM 读写；
+5. Triton 和普通 Python 有什么区别；
+6. 为什么不要一开始直接写 FlashAttention 或复杂 CUDA kernel。
+
+## 阶段 3：Transformers 生成过程
 
 目标：理解一个请求如何从文本变成 token，再一步步生成输出。
 
@@ -101,7 +140,7 @@ PyTorch 推理基础
 3. KV cache 为什么能避免重复计算；
 4. KV cache 为什么又会成为显存瓶颈。
 
-## 阶段 3：Toy LLM Serving
+## 阶段 4：Toy LLM Serving
 
 目标：自己写一个很慢的 LLM server，理解 vLLM/SGLang 解决的痛点。
 
@@ -140,7 +179,7 @@ PyTorch 推理基础
 3. 为什么流式输出会影响 server 设计；
 4. 为什么 serving 系统必须处理调度，而不只是包一层 HTTP。
 
-## 阶段 4：vLLM 主路径
+## 阶段 5：vLLM 主路径
 
 目标：把 vLLM 当成一个推理系统学习，而不是只当部署工具使用。
 
@@ -188,7 +227,9 @@ HTTP request
 → streamed tokens
 ```
 
-## 阶段 5：SGLang 主路径
+并能补充说明：scheduler / model runner 为什么需要为 attention backend 准备 KV cache metadata、block table、positions、token ids 等信息。
+
+## 阶段 6：SGLang 主路径
 
 目标：理解 SGLang 与 vLLM 的共同点和差异，尤其是复杂生成程序、prefix reuse 和 structured output。
 
@@ -227,15 +268,16 @@ HTTP request
 1. SGLang 为什么强调 structured language model programs；
 2. RadixAttention 与普通 prefix cache 的关系；
 3. structured output 为什么不能只靠 prompt 约束；
-4. vLLM 与 SGLang 在 serving 目标上的差异。
+4. vLLM 与 SGLang 在 serving 目标上的差异；
+5. radix cache、memory pool、structured output decoding 与底层 kernel / logits processing 的关系。
 
-## 阶段 6：论文体系
+## 阶段 7：论文体系
 
 不要一开始把论文当教科书从头硬读。建议先用工程实验建立直觉，再读论文回答具体问题。
 
 推荐阅读顺序见：`docs/01-paper-syllabus.md`。
 
-## 阶段 7：开源贡献
+## 阶段 8：开源贡献
 
 推荐贡献路径：
 
@@ -258,12 +300,13 @@ HTTP request
 | 周期 | 主题 | 产出 |
 |---|---|---|
 | Week 1-2 | PyTorch 推理基础 | tensor / memory / profiler 实验 |
-| Week 3-4 | Transformers 生成 | naive decoding / KV cache decoding |
-| Week 5-6 | Toy serving | HTTP server / streaming / benchmark |
-| Week 7-9 | vLLM | server / benchmark / source notes |
-| Week 10-12 | SGLang | structured output / radix cache / source notes |
-| Week 13-14 | 论文集中阅读 | paper notes |
-| Week 15-16 | 开源贡献准备 | issue reproduction / test / first PR |
+| Week 3 | Operator / Kernel 基础 | tensor layout / profiler / Triton 小 kernel |
+| Week 4-5 | Transformers 生成 | naive decoding / KV cache decoding |
+| Week 6-7 | Toy serving | HTTP server / streaming / benchmark |
+| Week 8-10 | vLLM | server / benchmark / source notes |
+| Week 11-13 | SGLang | structured output / radix cache / source notes |
+| Week 14-15 | 论文集中阅读 | paper notes |
+| Week 16-17 | 开源贡献准备 | issue reproduction / test / first PR |
 
 ## 最终验收
 
@@ -273,5 +316,6 @@ HTTP request
 2. 对同一 workload 做 benchmark，并解释差异；
 3. 读懂一篇 LLM serving 论文的 problem、method、system design、evaluation；
 4. 在 vLLM 或 SGLang 中定位请求处理主路径；
-5. 复现一个 issue，并提交最小复现脚本；
-6. 提交一个小型文档、测试或 benchmark PR。
+5. 解释 Python、operator、kernel、attention backend、KV cache layout 的关系；
+6. 复现一个 issue，并提交最小复现脚本；
+7. 提交一个小型文档、测试或 benchmark PR。
