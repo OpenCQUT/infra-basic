@@ -1,0 +1,136 @@
+[submodule "vendor/vllm-project/vllm"]
+	path = vendor/vllm-project/vllm
+	url = https://github.com/vllm-project/vllm
+	shallow = true
+[submodule "vendor/sgl-project/sglang"]
+	path = vendor/sgl-project/sglang
+	url = https://github.com/sgl-project/sglang
+	shallow = true
+[submodule "vendor/huggingface/text-generation-inference"]
+	path = vendor/huggingface/text-generation-inference
+	url = https://github.com/huggingface/text-generation-inference
+	shallow = true
+[submodule "vendor/InternLM/lmdeploy"]
+	path = vendor/InternLM/lmdeploy
+	url = https://github.com/InternLM/lmdeploy
+	shallow = true
+[submodule "vendor/ggml-org/llama.cpp"]
+	path = vendor/ggml-org/llama.cpp
+	url = https://github.com/ggml-org/llama.cpp
+	shallow = true
+[submodule "vendor/ggml-org/ggml"]
+	path = vendor/ggml-org/ggml
+	url = https://github.com/ggml-org/ggml
+	shallow = true
+[submodule "vendor/ai-dynamo/dynamo"]
+	path = vendor/ai-dynamo/dynamo
+	url = https://github.com/ai-dynamo/dynamo
+	shallow = true
+[submodule "vendor/triton-inference-server/tensorrtllm_backend"]
+	path = vendor/triton-inference-server/tensorrtllm_backend
+	url = https://github.com/triton-inference-server/tensorrtllm_backend
+	shallow = true
+[submodule "vendor/triton-inference-server/server"]
+	path = vendor/triton-inference-server/server
+	url = https://github.com/triton-inference-server/server
+	shallow = true
+[submodule "vendor/flashinfer-ai/flashinfer"]
+	path = vendor/flashinfer-ai/flashinfer
+	url = https://github.com/flashinfer-ai/flashinfer
+	shallow = true
+[submodule "vendor/Dao-AILab/flash-attention"]
+	path = vendor/Dao-AILab/flash-attention
+	url = https://github.com/Dao-AILab/flash-attention
+	shallow = true
+[submodule "vendor/NVIDIA/cutlass"]
+	path = vendor/NVIDIA/cutlass
+	url = https://github.com/NVIDIA/cutlass
+	shallow = true
+[submodule "vendor/NVIDIA/TensorRT-LLM"]
+	path = vendor/NVIDIA/TensorRT-LLM
+	url = https://github.com/NVIDIA/TensorRT-LLM
+	shallow = true
+[submodule "vendor/triton-lang/triton"]
+	path = vendor/triton-lang/triton
+	url = https://github.com/triton-lang/triton
+	shallow = true
+[submodule "vendor/deepseek-ai/FlashMLA"]
+	path = vendor/deepseek-ai/FlashMLA
+	url = https://github.com/deepseek-ai/FlashMLA
+	shallow = true
+[submodule "vendor/deepseek-ai/DeepGEMM"]
+	path = vendor/deepseek-ai/DeepGEMM
+	url = https://github.com/deepseek-ai/DeepGEMM
+	shallow = true
+[submodule "vendor/deepseek-ai/DeepEP"]
+	path = vendor/deepseek-ai/DeepEP
+	url = https://github.com/deepseek-ai/DeepEP
+	shallow = true
+[submodule "vendor/deepseek-ai/3FS"]
+	path = vendor/deepseek-ai/3FS
+	url = https://github.com/deepseek-ai/3FS
+	shallow = true
+[submodule "vendor/LMCache/LMCache"]
+	path = vendor/LMCache/LMCache
+	url = https://github.com/LMCache/LMCache
+	shallow = true
+[submodule "vendor/dottxt-ai/outlines"]
+	path = vendor/dottxt-ai/outlines
+	url = https://github.com/dottxt-ai/outlines
+	shallow = true
+[submodule "vendor/guidance-ai/guidance"]
+	path = vendor/guidance-ai/guidance
+	url = https://github.com/guidance-ai/guidance
+	shallow = true
+[submodule "vendor/PaddlePaddle/PaddleNLP"]
+	path = vendor/PaddlePaddle/PaddleNLP
+	url = https://github.com/PaddlePaddle/PaddleNLP
+	shallow = true
+[submodule "vendor/openai/codex"]
+	path = vendor/openai/codex
+	url = https://github.com/openai/codex
+	shallow = true
+[submodule "vendor/anthropics/claude-code"]
+	path = vendor/anthropics/claude-code
+	url = https://github.com/anthropics/claude-code
+	shallow = true
+[submodule "vendor/google-gemini/gemini-cli"]
+	path = vendor/google-gemini/gemini-cli
+	url = https://github.com/google-gemini/gemini-cli
+	shallow = true
+[submodule "vendor/aider-ai/aider"]
+	path = vendor/aider-ai/aider
+	url = https://github.com/aider-ai/aider
+	shallow = true
+[submodule "vendor/OpenHands/openhands"]
+	path = vendor/OpenHands/openhands
+	url = https://github.com/OpenHands/openhands
+	shallow = true
+[submodule "vendor/cline/cline"]
+	path = vendor/cline/cline
+	url = https://github.com/cline/cline
+	shallow = true
+[submodule "vendor/RooCodeInc/Roo-Code"]
+	path = vendor/RooCodeInc/Roo-Code
+	url = https://github.com/RooCodeInc/Roo-Code
+	shallow = true
+[submodule "vendor/RooCodeInc/Roo-Code-Docs"]
+	path = vendor/RooCodeInc/Roo-Code-Docs
+	url = https://github.com/RooCodeInc/Roo-Code-Docs
+	shallow = true
+[submodule "vendor/anomalyco/opencode"]
+	path = vendor/anomalyco/opencode
+	url = https://github.com/anomalyco/opencode
+	shallow = true
+[submodule "vendor/continuedev/continue"]
+	path = vendor/continuedev/continue
+	url = https://github.com/continuedev/continue
+	shallow = true
+[submodule "vendor/SWE-agent/SWE-agent"]
+	path = vendor/SWE-agent/SWE-agent
+	url = https://github.com/SWE-agent/SWE-agent
+	shallow = true
+[submodule "vendor/SWE-agent/mini-swe-agent"]
+	path = vendor/SWE-agent/mini-swe-agent
+	url = https://github.com/SWE-agent/mini-swe-agent
+	shallow = true
