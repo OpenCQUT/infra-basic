@@ -4,6 +4,7 @@ export default defineConfig({
   title: 'LLM Infra Basic',
   description: 'CUDA-first LLM inference infrastructure learning path',
   lang: 'zh-CN',
+  base: process.env.VITEPRESS_BASE ?? '/',
   cleanUrls: true,
   lastUpdated: true,
   themeConfig: {
